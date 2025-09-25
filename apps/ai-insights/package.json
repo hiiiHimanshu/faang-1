@@ -1,0 +1,31 @@
+{
+  "name": "atlas-ai-insights",
+  "version": "1.0.0",
+  "description": "Advanced AI-powered financial insights microservice for Atlas Ledger",
+  "main": "main.py",
+  "scripts": {
+    "start": "./start.sh",
+    "dev": "python main.py",
+    "test": "python -m pytest tests/ -v",
+    "install": "./start.sh",
+    "health": "curl -f http://localhost:5000/health || exit 1"
+  },
+  "keywords": [
+    "fastapi",
+    "ai",
+    "machine-learning",
+    "financial-insights",
+    "anomaly-detection",
+    "forecasting",
+    "microservice"
+  ],
+  "author": "Atlas Ledger Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atlas-ledger/ai-insights"
+  },
+  "engines": {
+    "python": ">=3.11"
+  }
+}

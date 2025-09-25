@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AppUser {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firebaseUid  String        @map("firebase_uid") @unique
+  email        String        @unique
+  createdAt    DateTime      @default(now()) @map("created_at")
+  plaidItems   PlaidItem[]
+  accounts     Account[]
+  transactions Transaction[]
+  budgetRules  BudgetRule[]
+  alerts       Alert[]
+
+  @@map("app_user")
+}
+
+model PlaidItem {
+  id                    String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String     @map("user_id") @db.Uuid
+  plaidItemId           String     @map("plaid_item_id") @unique
+  accessTokenCiphertext String     @map("access_token")
+  institutionName       String?    @map("institution_name")
+  cursor                String?    @map("cursor")
+  createdAt             DateTime   @default(now()) @map("created_at")
+  user                  AppUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accounts              Account[]
+
+  @@map("plaid_item")
+}
+
+model Account {
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String     @map("user_id") @db.Uuid
+  plaidItemId    String     @map("plaid_item_id") @db.Uuid
+  plaidAccountId String     @map("plaid_account_id") @unique
+  name           String?
+  officialName   String?    @map("official_name")
+  mask           String?
+  type           String?
+  subtype        String?
+  currency       String     @default("USD")
+  user           AppUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plaidItem      PlaidItem  @relation(fields: [plaidItemId], references: [id], onDelete: Cascade)
+  transactions   Transaction[]
+
+  @@map("account")
+}
+
+model Transaction {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  accountId    String   @map("account_id") @db.Uuid
+  plaidTxnId   String   @map("plaid_txn_id") @unique
+  postedAt     DateTime? @map("posted_at") @db.Date
+  amount       Decimal  @db.Decimal(14, 2)
+  merchantName String?  @map("merchant_name")
+  rawCategory  Json?    @map("raw_category")
+  aiCategory   String?  @map("ai_category")
+  aiConfidence Decimal? @map("ai_confidence") @db.Decimal(4, 3)
+  isRecurring  Boolean  @default(false) @map("is_recurring")
+  createdAt    DateTime @default(now()) @map("created_at")
+  user         AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("transaction")
+}
+
+model BudgetRule {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  category     String
+  monthlyLimit Decimal  @map("monthly_limit") @db.Decimal(14, 2)
+  user         AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("budget_rule")
+}
+
+model Alert {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  kind      String
+  payload   Json?
+  firedAt   DateTime @default(now()) @map("fired_at")
+  read      Boolean  @default(false)
+  user      AppUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("alert")
+}
