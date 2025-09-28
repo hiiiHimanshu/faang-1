@@ -4,12 +4,15 @@
   "workspaces": [
     "apps/frontend",
     "apps/backend",
+    "apps/weather-api",
     "packages/*"
   ],
   "scripts": {
     "dev": "concurrently \"npm:dev --workspace apps/frontend\" \"npm:start:dev --workspace apps/backend\"",
+    "dev:weather": "npm run dev --workspace apps/weather-api",
     "frontend": "npm run dev --workspace apps/frontend",
     "backend": "npm run start:dev --workspace apps/backend",
+    "weather-api": "npm run dev --workspace apps/weather-api",
     "lint": "turbo lint",
     "build": "turbo build"
   },
